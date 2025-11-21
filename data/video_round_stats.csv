@@ -1,0 +1,2 @@
+round_id,total_frames,pose_frames,pose_coverage,guard_down_ratio,avg_left_guard_height,avg_right_guard_height,avg_hip_rotation,avg_stance_width,avg_head_y,video_danger_score,video_form_score,video_focus_next_round
+round1,14095,8520,0.6044696700957787,0.010328638497652582,0.031024675537338,0.03552993167751412,0.0425502892426202,0.0425502892426202,0.6307253441025673,0.1644093150602801,9.157296147703295,pressure_and_body

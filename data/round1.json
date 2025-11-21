@@ -1,0 +1,15 @@
+{
+  "round_id": "round1",
+  "total_frames": 14095,
+  "pose_frames": 8520,
+  "pose_coverage": 0.6044696700957787,
+  "guard_down_ratio": 0.010328638497652582,
+  "avg_left_guard_height": 0.031024675537338,
+  "avg_right_guard_height": 0.03552993167751412,
+  "avg_hip_rotation": 0.0425502892426202,
+  "avg_stance_width": 0.0425502892426202,
+  "avg_head_y": 0.6307253441025673,
+  "video_danger_score": 0.1644093150602801,
+  "video_form_score": 9.157296147703295,
+  "video_focus_next_round": "pressure_and_body"
+}
