@@ -1,6 +1,6 @@
 # 🥊 SAMMO Fight IQ
 
-**Personal AI Boxing Coach** — Turns sparring video into actionable coaching feedback.
+**Personal AI Boxing Coach** Turns sparring video into actionable coaching feedback.
 
 Built on Red Hat OpenShift AI with pose detection, risk assessment, and persistent memory.
 
