@@ -19,6 +19,7 @@ Built on Red Hat OpenShift AI with pose detection, risk assessment, and persiste
 ## Sample Output
 ```
 🥊 SAMMO:
+
 Your danger score of 0.65 is in the MODERATE-HIGH risk zone.
 
 Main issue: Guard discipline - you're dropping it 38% of the time.
