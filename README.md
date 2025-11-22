@@ -128,3 +128,4 @@ Built by a 47-year-old boxer who wanted objective feedback on his sparring round
 
 MIT
 EOF
+![Architecture](docs/architecture.svg)
