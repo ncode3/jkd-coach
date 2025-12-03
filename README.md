@@ -31,9 +31,9 @@
 
 Before SAMMO was an AI, there was **Jimmy Carter** not the president, but my grandfather, a legend in the ring.
 
-In the 1950s, Jimmy Carter stood at the pinnacle of boxing. **Three-time World Lightweight Champion** and later inducted into the **International Boxing Hall of Fame**, he wasn't just a fighter—he was a *student* of the sweet science. His teachings passed down through generations: *"Watch your opponent's hips, not their hands. The hips don't lie."*
+In the 1950s, Jimmy Carter stood at the pinnacle of boxing. **Three-time World Lightweight Champion** and later inducted into the **International Boxing Hall of Fame**, he wasn't just a fighter he was a *student* of the sweet science. His teachings passed down through generations: *"Watch your opponent's hips, not their hands. The hips don't lie."*
 
-I'm 47 years old now, still stepping into the ring, still chasing that perfect round. When I spar, I hear my grandfather's voice in my head. But coaches can't watch every round. Video sits on phones, unreviewed. The wisdom that took a lifetime to accumulate—*how do we preserve it? How do we pass it on?*
+I'm 47 years old now, still stepping into the ring, still chasing that perfect round. When I spar, I hear my grandfather's voice in my head. But coaches can't watch every round. Video sits on phones, unreviewed. The wisdom that took a lifetime to accumulate *how do we preserve it? How do we pass it on?*
 
 **SAMMO** is my answer. It's not just an AI coach. It's a way to encode the knowledge that made champions, and make it available to every fighter willing to learn.
 
