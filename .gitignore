@@ -29,3 +29,10 @@ build/
 # Environment files
 .env
 .env.local
+*.key
+*.pem
+
+# Google Cloud credentials
+*service-account*.json
+credentials.json
+garage-key.json

@@ -1,0 +1,73 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+notebooks/
+*.ipynb
+.ipynb_checkpoints/
+
+# Tests
+tests/
+pytest_cache/
+.pytest_cache/
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Data files
+data/
+mem_data/
+models/
+*.mp4
+*.csv
+*.json
+*.jsonl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+*.key
+*.pem
+*service-account*.json
+credentials.json
+
+# Build artifacts
+*.log
+coverage/
+htmlcov/
+.coverage
+
+# Examples and other apps
+examples/
+api_server.py
+main.py
+src/auth/
+requirements.txt
+requirements-openshift.txt.bak

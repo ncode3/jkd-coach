@@ -1,0 +1,19 @@
+# SAMMO Fight IQ - OpenShift Deployment Requirements
+# Flask-based containerized application with JWT authentication
+
+# Web framework
+flask==3.0.0
+flask-cors==4.0.0
+
+# Google Cloud
+google-cloud-firestore==2.14.0
+
+# WSGI server for production
+gunicorn==21.2.0
+
+# Environment management
+python-dotenv==1.0.0
+
+# Authentication
+pyjwt==2.8.0
+passlib[bcrypt]==1.7.4

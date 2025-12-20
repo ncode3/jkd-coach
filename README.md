@@ -110,39 +110,98 @@ The metrics my grandfather would track with his eyes, SAMMO tracks with computer
 
 ```
 sammo-fight-iq/
-├── 📂 data/                    # Round stats and video data
-├── 📂 mem_data/                # Conversation history
+├── 📂 src/                     # Core source code
+│   ├── agents/                 # AI coaching agents
+│   ├── auth/                   # Authentication module
+│   └── utilities/              # Helper functions
+├── 📂 deployments/             # Deployment configurations
+│   ├── openshift/              # OpenShift/Kubernetes
+│   ├── cloud-functions/        # Google Cloud Functions
+│   └── fastapi-auth/           # FastAPI with JWT auth
+├── 📂 docs/                    # Complete documentation
+├── 📂 notebooks/               # Jupyter notebooks for analysis
+├── 📂 tests/                   # Test suites
+├── 📂 data/                    # Training data and videos
 ├── 📂 models/                  # Trained ML models
-│   ├── danger_predictor.joblib
-│   └── focus_predictor.joblib
-├── 📓 notebooks/
-│   ├── 01_pose_detection_test.ipynb
-│   ├── 02_video_processing.ipynb
-│   └── 03_model_inference_test.ipynb
-└── 📂 src/
-    ├── simple_memory.py        # JSONL-based conversation store
-    ├── llm_client.py           # OpenAI-compatible LLM client
-    ├── memory_layer.py         # Memory-backed LLM wrapper
-    └── agents/
-        ├── base_coach.py
-        └── boxing_coach.py     # SAMMO personality
+└── 📂 mem_data/                # Conversation history
 ```
+
+**[📖 Full Project Structure](docs/PROJECT_STRUCTURE.md)**
 
 ---
 
 ## 🚀 Quick Start
 
-```bash
-# Clone the legacy
-git clone https://github.com/ncode3/sammo-fight-iq.git
-cd sammo-fight-iq
+### Option 1: Deploy to OpenShift (5 minutes)
 
+```bash
+# Set your Firestore credentials
+export FIRESTORE_CREDENTIALS=/path/to/credentials.json
+
+# Deploy
+cd deployments/openshift
+./deploy.sh
+```
+
+**[📘 OpenShift Quick Start](docs/OPENSHIFT_QUICKSTART.md)**
+
+### Option 2: Run API with Authentication
+
+```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Start training
+# Configure environment
+cp .env.example .env
+# Add your JWT_SECRET_KEY and GOOGLE_APPLICATION_CREDENTIALS
+
+# Start API server
+cd deployments/fastapi-auth
+python api_server.py
+# Visit http://localhost:8000/docs
+```
+
+**[📘 API Quick Start](docs/API_QUICKSTART.md)**
+
+### Option 3: Explore with Jupyter
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start Jupyter
 jupyter lab notebooks/03_model_inference_test.ipynb
 ```
+
+---
+
+## 📦 Deployment Options
+
+SAMMO Fight IQ can be deployed in multiple ways:
+
+| Deployment | Best For | Quick Start |
+|------------|----------|-------------|
+| **[OpenShift/Kubernetes](deployments/openshift/)** | On-premises, enterprise | [Deploy Now](docs/OPENSHIFT_QUICKSTART.md) |
+| **[FastAPI + JWT Auth](deployments/fastapi-auth/)** | API-first, user authentication | [Setup Guide](docs/AUTH_SETUP.md) |
+| **[Cloud Functions](deployments/cloud-functions/)** | Serverless, pay-per-use | [Deploy Guide](docs/DEPLOYMENT.md) |
+
+**[🔍 Compare Deployments](deployments/README.md)**
+
+---
+
+## 📚 Documentation
+
+### Quick Links
+- **[📖 All Documentation](docs/README.md)** - Complete docs index
+- **[🚀 OpenShift Deployment](docs/OPENSHIFT_DEPLOYMENT.md)** - Container deployment guide
+- **[🔐 Authentication Guide](docs/AUTH_SETUP.md)** - JWT auth setup
+- **[⚡ Quick Commands](docs/DEPLOYMENT_COMMANDS.md)** - CLI reference
+
+### By Topic
+- **Getting Started**: [Deployment Options](deployments/README.md)
+- **API Development**: [API Quick Start](docs/API_QUICKSTART.md)
+- **DevOps**: [OpenShift Guide](docs/OPENSHIFT_DEPLOYMENT.md)
+- **Reference**: [Project Structure](docs/PROJECT_STRUCTURE.md)
 
 ---
 
@@ -152,16 +211,22 @@ jupyter lab notebooks/03_model_inference_test.ipynb
 - [x] ✅ Video pose detection pipeline
 - [x] ✅ Risk scoring model
 - [x] ✅ Agentic coach with memory
+- [x] ✅ JWT authentication system
+- [x] ✅ FastAPI server with auth
+- [x] ✅ OpenShift containerization
+- [x] ✅ Cloud Functions deployment
 
 **In Progress:**
 - [ ] 🔄 Connect to production LLM (Ollama)
-- [ ] 🔄 FastAPI server deployment
+- [ ] 🔄 Email verification flow
+- [ ] 🔄 OAuth integration
 
 **Future:**
 - [ ] 📋 Web UI (Streamlit/Gradio)
 - [ ] 📋 World model for predictive coaching
 - [ ] 📋 Multi-round progress tracking
 - [ ] 📋 Multi-fighter comparison analytics
+- [ ] 📋 Real-time video analysis
 
 ---
 

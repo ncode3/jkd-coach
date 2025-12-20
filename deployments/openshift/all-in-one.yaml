@@ -1,0 +1,159 @@
+# SAMMO Fight IQ - Complete OpenShift Deployment
+# Apply with: oc apply -f openshift/all-in-one.yaml
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sammo-fight-iq
+  labels:
+    app: sammo-fight-iq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sammo-fight-iq
+  labels:
+    app: sammo-fight-iq
+    app.kubernetes.io/name: sammo-fight-iq
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sammo-fight-iq
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: sammo-fight-iq
+    spec:
+      serviceAccountName: sammo-fight-iq
+      containers:
+      - name: sammo-fight-iq
+        image: image-registry.openshift-image-registry.svc:5000/sammo-fight-iq/sammo-fight-iq:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: http
+        env:
+        - name: PORT
+          value: "8080"
+        - name: FLASK_ENV
+          value: "production"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/secrets/credentials.json"
+        volumeMounts:
+        - name: firestore-credentials
+          mountPath: /secrets
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: firestore-credentials
+        secret:
+          secretName: firestore-credentials
+          defaultMode: 0400
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sammo-fight-iq
+  labels:
+    app: sammo-fight-iq
+    app.kubernetes.io/name: sammo-fight-iq
+    app.kubernetes.io/component: backend
+spec:
+  selector:
+    app: sammo-fight-iq
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+  sessionAffinity: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sammo-fight-iq
+  labels:
+    app: sammo-fight-iq
+    app.kubernetes.io/name: sammo-fight-iq
+spec:
+  to:
+    kind: Service
+    name: sammo-fight-iq
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sammo-fight-iq
+  labels:
+    app: sammo-fight-iq
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sammo-fight-iq
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
