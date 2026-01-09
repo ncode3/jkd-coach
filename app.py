@@ -12,9 +12,11 @@ A containerized boxing analysis API that provides:
 Connects to Google Cloud Firestore for data persistence.
 """
 import os
+import tempfile
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime, timedelta
 from functools import wraps
+from pathlib import Path
 
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
@@ -22,6 +24,15 @@ from google.cloud import firestore
 import jwt
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
+
+# Import video analysis modules
+try:
+    from src.video_analyzer import analyze_video_file
+    from src.risk_model import video_form_and_danger
+    VIDEO_ANALYSIS_AVAILABLE = True
+except ImportError:
+    VIDEO_ANALYSIS_AVAILABLE = False
+    print("⚠️  Video analysis modules not available")
 
 # ============================================================================
 # Configuration
@@ -265,6 +276,7 @@ def root():
             'protected': {
                 'me': '/auth/me (GET)',
                 'log_round': '/api/log_round (POST)',
+                'analyze_video': '/api/analyze_video (POST - multipart/form-data)',
                 'dashboard_stats': '/api/dashboard_stats (GET)',
                 'rounds_history': '/api/rounds_history (GET)',
                 'delete_round': '/api/rounds/{id} (DELETE)'
@@ -515,6 +527,185 @@ def log_round():
             'status': 'error',
             'message': f'Internal server error: {str(e)}'
         }), 500
+
+
+@app.route('/api/analyze_video', methods=['POST'])
+@require_auth
+def analyze_video():
+    """Analyze a boxing video and extract metrics using MediaPipe pose detection."""
+    if not VIDEO_ANALYSIS_AVAILABLE:
+        return jsonify({
+            'status': 'error',
+            'message': 'Video analysis not available - missing dependencies'
+        }), 503
+
+    if _rounds_collection is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'Firestore not available'
+        }), 503
+
+    try:
+        user = get_current_user()
+
+        # Check if video file was uploaded
+        if 'video' not in request.files:
+            return jsonify({
+                'status': 'error',
+                'message': 'No video file provided'
+            }), 400
+
+        video_file = request.files['video']
+
+        if video_file.filename == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'Empty filename'
+            }), 400
+
+        # Get optional metadata from form data
+        round_name = request.form.get('round_name', 'video_round')
+        notes = request.form.get('notes', '')
+
+        # Save uploaded video to temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
+            temp_path = temp_file.name
+            video_file.save(temp_path)
+
+        try:
+            # Analyze video using MediaPipe
+            app.logger.info(f"Analyzing video: {video_file.filename}")
+            metrics = analyze_video_file(temp_path)
+
+            # Calculate danger and form scores
+            enriched_metrics = video_form_and_danger(metrics)
+
+            # Get danger score and focus recommendation
+            danger_score = enriched_metrics['video_danger_score']
+            form_score = enriched_metrics['video_form_score']
+            focus_next_round = enriched_metrics['video_focus_next_round']
+
+            # Generate coaching strategy based on danger score
+            strategy_title, strategy_text = get_strategy(danger_score)
+
+            # Prepare document for Firestore
+            round_doc = {
+                'user_id': user['id'],
+                'username': user['username'],
+                'round_name': round_name,
+                'video_filename': video_file.filename,
+                'notes': notes,
+
+                # Video metrics
+                'total_frames': enriched_metrics['total_frames'],
+                'pose_frames': enriched_metrics['pose_frames'],
+                'pose_coverage': enriched_metrics['pose_coverage'],
+                'guard_down_ratio': enriched_metrics['guard_down_ratio'],
+                'avg_left_guard_height': enriched_metrics['avg_left_guard_height'],
+                'avg_right_guard_height': enriched_metrics['avg_right_guard_height'],
+                'avg_hip_rotation': enriched_metrics['avg_hip_rotation'],
+                'avg_stance_width': enriched_metrics['avg_stance_width'],
+                'head_movement_score': enriched_metrics['head_movement_score'],
+
+                # Scores and recommendations
+                'danger_score': danger_score,
+                'form_score': form_score,
+                'focus_next_round': focus_next_round,
+                'strategy_title': strategy_title,
+                'strategy_text': strategy_text,
+
+                'date': firestore.SERVER_TIMESTAMP,
+                'analysis_type': 'video'
+            }
+
+            # Store in Firestore
+            doc_ref, _ = _rounds_collection.add(round_doc)
+
+            # Generate coaching feedback
+            coaching_feedback = generate_video_coaching(enriched_metrics, strategy_text)
+
+            return jsonify({
+                'status': 'success',
+                'id': doc_ref.id,
+                'metrics': {
+                    'total_frames': enriched_metrics['total_frames'],
+                    'pose_coverage': round(enriched_metrics['pose_coverage'] * 100, 1),
+                    'guard_down_ratio': round(enriched_metrics['guard_down_ratio'] * 100, 1),
+                    'avg_left_guard_height': round(enriched_metrics['avg_left_guard_height'], 3),
+                    'avg_right_guard_height': round(enriched_metrics['avg_right_guard_height'], 3),
+                    'avg_hip_rotation': round(enriched_metrics['avg_hip_rotation'], 1),
+                    'avg_stance_width': round(enriched_metrics['avg_stance_width'], 3),
+                    'head_movement_score': round(enriched_metrics['head_movement_score'], 3),
+                },
+                'scores': {
+                    'danger_score': round(danger_score, 2),
+                    'form_score': round(form_score, 1),
+                    'focus_next_round': focus_next_round
+                },
+                'strategy': {
+                    'title': strategy_title,
+                    'text': strategy_text
+                },
+                'coaching': coaching_feedback
+            }), 200
+
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+    except ValueError as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Video analysis error: {str(e)}'
+        }), 400
+    except Exception as e:
+        app.logger.error(f"Error analyzing video: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Internal server error: {str(e)}'
+        }), 500
+
+
+def generate_video_coaching(metrics: Dict[str, Any], strategy_text: str) -> str:
+    """Generate coaching feedback based on video metrics."""
+    danger_score = metrics['video_danger_score']
+    guard_down_ratio = metrics['guard_down_ratio']
+    pose_coverage = metrics['pose_coverage']
+
+    feedback_parts = []
+
+    # Danger level assessment
+    if danger_score >= 0.7:
+        feedback_parts.append("⚠️ HIGH RISK - Your danger score is critically high.")
+    elif danger_score >= 0.4:
+        feedback_parts.append("⚡ MODERATE RISK - Some defensive concerns to address.")
+    else:
+        feedback_parts.append("✅ LOW RISK - Good defensive fundamentals.")
+
+    # Guard discipline
+    if guard_down_ratio > 0.3:
+        feedback_parts.append(f"Guard down {guard_down_ratio*100:.0f}% of the time - MAJOR concern.")
+    elif guard_down_ratio > 0.15:
+        feedback_parts.append(f"Guard dropping {guard_down_ratio*100:.0f}% of frames - needs work.")
+    else:
+        feedback_parts.append(f"Solid guard discipline ({guard_down_ratio*100:.0f}% down).")
+
+    # Pose tracking quality
+    if pose_coverage < 0.5:
+        feedback_parts.append(f"Low tracking coverage ({pose_coverage*100:.0f}%) - video quality issue or angles.")
+
+    # Hip rotation
+    hip_rotation = metrics['avg_hip_rotation']
+    if hip_rotation < 25:
+        feedback_parts.append(f"Hip rotation weak ({hip_rotation:.0f}°) - work on stance and pivots.")
+    elif hip_rotation > 40:
+        feedback_parts.append(f"Good hip rotation ({hip_rotation:.0f}°) - generating power.")
+
+    # Add strategy
+    feedback_parts.append(f"\nStrategy: {strategy_text}")
+
+    return "\n".join(feedback_parts)
 
 
 @app.route('/api/dashboard_stats', methods=['GET'])
