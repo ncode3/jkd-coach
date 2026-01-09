@@ -1,10 +1,10 @@
 <div align="center">
 
-# 🥊 SAMMO Fight IQ
+# 💧 JKD Coach
 
-### *Carrying On a Legacy, One Round at a Time*
+### *Be Water. Train Smarter.*
 
-**AI-Powered Boxing Coach** — From video analysis to actionable coaching, built on decades of ring wisdom.
+**AI-Powered Boxing Coach** — From video analysis to actionable coaching, blending Bruce Lee's adaptability with decades of ring wisdom.
 
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![OpenShift AI](https://img.shields.io/badge/OpenShift_AI-EE0000?style=for-the-badge&logo=redhat&logoColor=white)](https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-ai)
@@ -13,7 +13,11 @@
 
 ---
 
-*"Boxing is the ultimate truth. Nobody can hide in the ring."*
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Bruce_Lee_1973.jpg/440px-Bruce_Lee_1973.jpg" alt="Bruce Lee" width="300">
+
+*"Be water, my friend. Empty your mind. Be formless, shapeless, like water. You put water into a cup, it becomes the cup. You put water into a bottle, it becomes the bottle. You put it into a teapot, it becomes the teapot. Now water can flow, or it can crash. Be water, my friend."*
+
+**— Bruce Lee**, Founder of Jeet Kune Do
 
 </div>
 
@@ -25,23 +29,35 @@
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/Jimmy_Carter_vs._Art_Aragon_1951.jpg" alt="Jimmy Carter - 3x World Lightweight Champion" width="400">
 
-**Jimmy Carter** — *3x World Lightweight Champion (1950s)*  
+**Jimmy Carter** — *3x World Lightweight Champion (1950s)*
 *International Boxing Hall of Fame Inductee*
 </div>
 
-Before SAMMO was an AI, there was **Jimmy Carter** not the president, but my grandfather, a legend in the ring.
+Before JKD Coach was an AI, there was **Jimmy Carter** — not the president, but my grandfather, a legend in the ring.
 
-In the 1950s, Jimmy Carter stood at the pinnacle of boxing. **Three-time World Lightweight Champion** and later inducted into the **International Boxing Hall of Fame**, he wasn't just a fighter he was a *student* of the sweet science. His teachings passed down through generations: *"Watch your opponent's hips, not their hands. The hips don't lie."*
+In the 1950s, Jimmy Carter stood at the pinnacle of boxing. **Three-time World Lightweight Champion** and later inducted into the **International Boxing Hall of Fame**, he wasn't just a fighter — he was a *student* of the sweet science. His teachings passed down through generations: *"Watch your opponent's hips, not their hands. The hips don't lie."*
 
-I'm 47 years old now, still stepping into the ring, still chasing that perfect round. When I spar, I hear my grandfather's voice in my head. But coaches can't watch every round. Video sits on phones, unreviewed. The wisdom that took a lifetime to accumulate *how do we preserve it? How do we pass it on?*
-
-**SAMMO** is my answer. It's not just an AI coach. It's a way to encode the knowledge that made champions, and make it available to every fighter willing to learn.
+I'm 47 years old now, still stepping into the ring, still chasing that perfect round. When I spar, I hear my grandfather's voice in my head. But coaches can't watch every round. Video sits on phones, unreviewed. The wisdom that took a lifetime to accumulate — *how do we preserve it? How do we pass it on?*
 
 ---
 
-## ⚡ What SAMMO Does
+## 🌊 Two Philosophies, One Vision
 
-SAMMO turns raw sparring footage into the kind of feedback a hall-of-fame coach would give:
+**JKD Coach** fuses two legendary approaches to combat:
+
+### Bruce Lee's "Be Water" Philosophy
+Adaptability. Fluidity. No fixed form. Jeet Kune Do teaches us to flow with the situation, absorbing what is useful and rejecting what is useless. In the ring, rigidity gets you knocked out. The fighter who can *adapt* — who can read, adjust, and flow — is the one who survives.
+
+### Jimmy Carter's Ring Wisdom
+*"The hips don't lie."* Technical precision. Pattern recognition. My grandfather knew that true mastery comes from understanding the fundamentals deeply enough to *see* what others miss. Every subtle shift in stance, every rotation of the hip, every dropped guard — these tell the story of a round.
+
+**JKD Coach** is my answer. It's not just an AI coach. It's a way to encode the knowledge that made champions — the *adaptability* of Bruce Lee and the *precision* of Jimmy Carter — and make it available to every fighter willing to learn.
+
+---
+
+## ⚡ What JKD Coach Does
+
+JKD Coach turns raw sparring footage into the kind of feedback a hall-of-fame coach would give:
 
 | Step | What Happens |
 |:----:|--------------|
@@ -51,19 +67,21 @@ SAMMO turns raw sparring footage into the kind of feedback a hall-of-fame coach 
 | 🎯 | **Recommends focus areas**: defense, ring cutting, pressure, body work |
 | 🤖 | **Provides coaching feedback** via an AI agent with conversation memory |
 
-The AI remembers your previous sessions. It knows your patterns. It becomes *your* coach.
+The AI remembers your previous sessions. It knows your patterns. It *adapts* to you. It becomes *your* coach.
 
 ---
 
 ## 💬 Sample Coaching Session
 
 ```
-🥊 SAMMO:
+💧 JKD Coach:
 
 Your danger score of 0.65 is in the MODERATE-HIGH risk zone.
 
 Main issue: Guard discipline - you're dropping it 38% of the time.
 Your left guard averages 0.42 (should be 0.55+).
+
+"Be water" - flow with your defense, don't force it.
 
 Fix: "Punch-and-return" drill
 - 3 rounds on heavy bag
@@ -92,7 +110,7 @@ Remember: "The hips don't lie." - Jimmy Carter
 
 ## 📈 Key Metrics
 
-The metrics my grandfather would track with his eyes, SAMMO tracks with computer vision:
+The metrics my grandfather would track with his eyes, JKD Coach tracks with computer vision:
 
 | Metric | Description | Target | Why It Matters |
 |--------|-------------|--------|----------------|
@@ -109,7 +127,7 @@ The metrics my grandfather would track with his eyes, SAMMO tracks with computer
 ## 📁 Project Structure
 
 ```
-sammo-fight-iq/
+jkd-coach/
 ├── 📂 src/                     # Core source code
 │   ├── agents/                 # AI coaching agents
 │   ├── auth/                   # Authentication module
@@ -177,7 +195,7 @@ jupyter lab notebooks/03_model_inference_test.ipynb
 
 ## 📦 Deployment Options
 
-SAMMO Fight IQ can be deployed in multiple ways:
+JKD Coach can be deployed in multiple ways:
 
 | Deployment | Best For | Quick Start |
 |------------|----------|-------------|
@@ -238,13 +256,16 @@ My grandfather spent his life mastering the sweet science, then passing that kno
 
 **The problem I faced:** At 47, I still spar regularly. But coaches can't watch every round. Video piles up on my phone. Generic advice like "keep your guard up" doesn't cut it when you need to know *exactly* what's breaking down and *when*.
 
-**SAMMO is the solution:** An AI that watches your video, measures what matters, and tells you exactly what to fix—with the kind of specificity that would make Jimmy Carter proud.
+**JKD Coach is the solution:** An AI that watches your video, measures what matters, and tells you exactly what to fix — with the kind of specificity that would make Jimmy Carter proud and the adaptability that Bruce Lee embodied.
 
-The name "SAMMO" honors the style of analysis my grandfather taught: **S**tance, **A**ngle, **M**ovement, **M**etrics, **O**utput. Watch everything. Measure everything. Leave nothing to chance.
+The philosophy behind JKD Coach honors both legends: **Be water** in your approach — adapt, flow, evolve. But also **watch the hips** — measure everything, understand the fundamentals, leave nothing to chance.
 
 ---
 
 <div align="center">
+
+### 💧 *"Be water, my friend."*
+— Bruce Lee
 
 ### 🥊 *"Champions aren't made in the ring—they're recognized there."*
 — Jimmy Carter, Hall of Fame
@@ -265,4 +286,4 @@ MIT License — Use it, learn from it, pass it on.
 
 ---
 
-![SAMMO Architecture](docs/sammo_architecture.svg)
+![JKD Coach Architecture](docs/sammo_architecture.svg)

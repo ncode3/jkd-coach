@@ -1,5 +1,5 @@
 """
-SAMMO Fight IQ - Flask Application with JWT Authentication
+JKD Coach - Flask Application with JWT Authentication
 
 A containerized boxing analysis API that provides:
 - User registration and login with JWT tokens
@@ -37,7 +37,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+# Enable CORS for all routes, origins, and methods
+CORS(app, resources={r"/*": {
+    "origins": "*",
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"],
+    "expose_headers": ["Content-Type", "Authorization"],
+    "supports_credentials": False
+}})
 
 # Initialize Firestore client
 try:
@@ -244,9 +251,10 @@ def _to_iso(ts) -> Optional[str]:
 def root():
     """Root endpoint with API information."""
     return jsonify({
-        'service': 'SAMMO Fight IQ',
+        'service': 'JKD Coach',
         'version': '1.0.0',
         'description': 'AI-Powered Boxing Coach API with JWT Authentication',
+        'tagline': 'Be Water. Train Smarter.',
         'authentication': 'JWT Bearer Token',
         'endpoints': {
             'public': {

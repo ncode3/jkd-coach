@@ -1,4 +1,4 @@
-# SAMMO Fight IQ - Dockerfile
+# JKD Coach - Dockerfile
 # Production-ready container for Flask API
 
 FROM python:3.9-slim

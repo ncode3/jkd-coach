@@ -1,4 +1,4 @@
-# SAMMO Fight IQ - Project Organization
+# JKD Coach - Project Organization
 
 ## 📋 Organization Summary
 
@@ -18,7 +18,7 @@ The project has been reorganized for maximum efficiency and clarity. All files a
 ## 📁 New Directory Structure
 
 ```
-sammo-fight-iq/
+jkd-coach/
 │
 ├── 📄 Essential Files (Root)
 │   ├── README.md                # Main project README with navigation
@@ -228,7 +228,7 @@ cd deployments/fastapi-auth && python api_server.py
 
 # Cloud Functions
 cd deployments/cloud-functions
-gcloud functions deploy sammo --runtime python39 --trigger-http
+gcloud functions deploy jkd-coach --runtime python39 --trigger-http
 
 # View all documentation
 ls docs/
