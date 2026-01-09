@@ -27,7 +27,7 @@
 
 <div align="center">
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/e/e3/Jimmy_Carter_vs._Art_Aragon_1951.jpg" alt="Jimmy Carter - 3x World Lightweight Champion" width="400">
+![Jimmy Carter - 3x World Lightweight Champion](docs/jimmy_carter_hof.jpg)
 
 **Jimmy Carter** — *3x World Lightweight Champion (1950s)*
 *International Boxing Hall of Fame Inductee*
