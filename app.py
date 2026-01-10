@@ -32,7 +32,7 @@ try:
     VIDEO_ANALYSIS_AVAILABLE = True
 except ImportError:
     VIDEO_ANALYSIS_AVAILABLE = False
-    print("⚠️  Video analysis modules not available")
+    print("[WARNING] Video analysis modules not available")
 
 # ============================================================================
 # Configuration
@@ -62,9 +62,9 @@ try:
     _firestore_client = firestore.Client()
     _rounds_collection = _firestore_client.collection('rounds')
     _users_collection = _firestore_client.collection('users')
-    print("✅ Connected to Firestore successfully")
+    print("[OK] Connected to Firestore successfully")
 except Exception as e:
-    print(f"⚠️  Firestore initialization warning: {e}")
+    print(f"[WARNING] Firestore initialization warning: {e}")
     _firestore_client = None
     _rounds_collection = None
     _users_collection = None
@@ -677,11 +677,11 @@ def generate_video_coaching(metrics: Dict[str, Any], strategy_text: str) -> str:
 
     # Danger level assessment
     if danger_score >= 0.7:
-        feedback_parts.append("⚠️ HIGH RISK - Your danger score is critically high.")
+        feedback_parts.append("[HIGH RISK] Your danger score is critically high.")
     elif danger_score >= 0.4:
-        feedback_parts.append("⚡ MODERATE RISK - Some defensive concerns to address.")
+        feedback_parts.append("[MODERATE RISK] Some defensive concerns to address.")
     else:
-        feedback_parts.append("✅ LOW RISK - Good defensive fundamentals.")
+        feedback_parts.append("[LOW RISK] Good defensive fundamentals.")
 
     # Guard discipline
     if guard_down_ratio > 0.3:
@@ -698,9 +698,9 @@ def generate_video_coaching(metrics: Dict[str, Any], strategy_text: str) -> str:
     # Hip rotation
     hip_rotation = metrics['avg_hip_rotation']
     if hip_rotation < 25:
-        feedback_parts.append(f"Hip rotation weak ({hip_rotation:.0f}°) - work on stance and pivots.")
+        feedback_parts.append(f"Hip rotation weak ({hip_rotation:.0f} degrees) - work on stance and pivots.")
     elif hip_rotation > 40:
-        feedback_parts.append(f"Good hip rotation ({hip_rotation:.0f}°) - generating power.")
+        feedback_parts.append(f"Good hip rotation ({hip_rotation:.0f} degrees) - generating power.")
 
     # Add strategy
     feedback_parts.append(f"\nStrategy: {strategy_text}")
