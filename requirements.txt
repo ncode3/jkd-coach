@@ -13,7 +13,7 @@ flake8
 pytest-cov
 
 # Core dependencies
-mediapipe>=0.10.0
+mediapipe>=1.0.0
 opencv-python-headless>=4.8.0  # Headless version for server deployments
 numpy>=1.24.0
 pandas>=2.0.0
