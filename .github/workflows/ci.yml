@@ -58,7 +58,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
       - name: Deploy Cloud Function
-        uses: google-github-actions/deploy-cloud-functions@v1
+        uses: google-github-actions/deploy-cloud-functions@v4
         with:
           name: sammo-fight-iq-function
           runtime: python311
