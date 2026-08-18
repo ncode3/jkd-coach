@@ -16,9 +16,23 @@ import functions_framework
 from flask import jsonify
 from google.cloud import firestore
 
-# Initialize Firestore client globally
-_firestore_client = firestore.Client()
-_rounds_collection = _firestore_client.collection("rounds")
+# Initialize Firestore lazily. Importing the module must remain safe in CI and
+# local tooling where Application Default Credentials are intentionally absent.
+_firestore_client = None
+_rounds_collection = None
+
+
+def _get_rounds_collection():
+    global _firestore_client, _rounds_collection
+
+    if _rounds_collection is None:
+        try:
+            _firestore_client = firestore.Client()
+            _rounds_collection = _firestore_client.collection("rounds")
+        except Exception:
+            return None
+
+    return _rounds_collection
 
 
 def _cors_headers() -> Dict[str, str]:
@@ -76,17 +90,23 @@ def _handle_log_round(request) -> Tuple[Any, int, Dict[str, str]]:
         headers = _cors_headers()
         return jsonify(body), 400, headers
 
+    rounds_collection = _get_rounds_collection()
+    if rounds_collection is None:
+        body = {"status": "error", "message": "Firestore is unavailable"}
+        return jsonify(body), 503, _cors_headers()
+
     # Add server timestamp
     payload["date"] = firestore.SERVER_TIMESTAMP
 
-    doc_ref, _ = _rounds_collection.add(payload)
+    doc_ref, _ = rounds_collection.add(payload)
     body = {"status": "success", "id": doc_ref.id}
     headers = _cors_headers()
     return jsonify(body), 200, headers
 
 
 def _handle_dashboard_stats(request) -> Tuple[Any, int, Dict[str, str]]:
-    docs = list(_rounds_collection.stream())
+    rounds_collection = _get_rounds_collection()
+    docs = list(rounds_collection.stream()) if rounds_collection is not None else []
     count = 0
     totals = {
         "pressure_score": 0.0,
@@ -134,7 +154,8 @@ def _handle_dashboard_stats(request) -> Tuple[Any, int, Dict[str, str]]:
 
 
 def _handle_rounds_history(request) -> Tuple[Any, int, Dict[str, str]]:
-    docs = list(_rounds_collection.stream())
+    rounds_collection = _get_rounds_collection()
+    docs = list(rounds_collection.stream()) if rounds_collection is not None else []
     rounds: List[Dict[str, Any]] = []
     for d in docs:
         data = d.to_dict() or {}
