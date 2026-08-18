@@ -3,9 +3,9 @@ Tests for authentication system.
 
 Run with: pytest tests/test_auth.py -v
 """
+
 import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
 
 from src.auth.jwt_handler import (
     create_access_token,
@@ -13,7 +13,7 @@ from src.auth.jwt_handler import (
     verify_token,
     get_password_hash,
     verify_password,
-    extract_token_from_header
+    extract_token_from_header,
 )
 from src.auth.models import TokenData
 
@@ -173,11 +173,7 @@ class TestTokenData:
         username = "testuser"
         exp = datetime.utcnow() + timedelta(minutes=30)
 
-        token_data = TokenData(
-            user_id=user_id,
-            username=username,
-            exp=exp
-        )
+        token_data = TokenData(user_id=user_id, username=username, exp=exp)
 
         assert token_data.user_id == user_id
         assert token_data.username == username
@@ -196,7 +192,7 @@ class TestAuthModels:
             username="testuser",
             email="test@example.com",
             password="SecurePass123!",
-            full_name="Test User"
+            full_name="Test User",
         )
 
         assert user.username == "testuser"
@@ -207,7 +203,7 @@ class TestAuthModels:
             UserCreate(
                 username="ab",  # Too short (min 3)
                 email="test@example.com",
-                password="SecurePass123!"
+                password="SecurePass123!",
             )
 
         # Test minimum password length
@@ -215,17 +211,14 @@ class TestAuthModels:
             UserCreate(
                 username="testuser",
                 email="test@example.com",
-                password="short"  # Too short (min 8)
+                password="short",  # Too short (min 8)
             )
 
     def test_user_login_validation(self):
         """Test UserLogin model validation."""
         from src.auth.models import UserLogin
 
-        login = UserLogin(
-            username="testuser",
-            password="SecurePass123!"
-        )
+        login = UserLogin(username="testuser", password="SecurePass123!")
 
         assert login.username == "testuser"
         assert login.password == "SecurePass123!"
@@ -235,9 +228,7 @@ class TestAuthModels:
         from src.auth.models import Token
 
         token = Token(
-            access_token="test.token.string",
-            token_type="bearer",
-            expires_in=1800
+            access_token="test.token.string", token_type="bearer", expires_in=1800
         )
 
         assert token.access_token == "test.token.string"

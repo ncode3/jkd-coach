@@ -1,6 +1,7 @@
 """Tests for the risk model module."""
-import pytest
+
 from src.risk_model import video_form_and_danger
+
 
 class TestVideoFormAndDanger:
     def test_low_danger_scenario(self):
@@ -28,7 +29,7 @@ class TestVideoFormAndDanger:
         """Test that danger score is always between 0 and 1."""
         stats = {
             "guard_down_ratio": 1.5,  # Invalid but should be handled
-            "pose_coverage": -0.5,    # Invalid but should be handled
+            "pose_coverage": -0.5,  # Invalid but should be handled
         }
         result = video_form_and_danger(stats)
         assert 0.0 <= result["video_danger_score"] <= 1.0

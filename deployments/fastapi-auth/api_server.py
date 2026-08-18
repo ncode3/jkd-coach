@@ -3,6 +3,7 @@ FastAPI server for SAMMO Fight IQ with JWT authentication.
 
 Provides authenticated REST API endpoints for boxing analysis and coaching.
 """
+
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
@@ -13,14 +14,14 @@ from pydantic import BaseModel, Field
 from google.cloud import firestore
 
 from src.auth.routes import router as auth_router
-from src.auth.dependencies import get_current_user, optional_authentication
+from src.auth.dependencies import get_current_user
 from src.auth.models import UserInDB
 
 # Initialize FastAPI app
 app = FastAPI(
     title="SAMMO Fight IQ API",
     description="AI-Powered Boxing Coach API with JWT Authentication",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Add CORS middleware
@@ -37,12 +38,13 @@ app.include_router(auth_router)
 
 # Initialize Firestore client
 _firestore_client = firestore.Client()
-_rounds_collection = _firestore_client.collection('rounds')
+_rounds_collection = _firestore_client.collection("rounds")
 
 
 # Request/Response Models
 class RoundData(BaseModel):
     """Round data for boxing analysis."""
+
     pressure_score: float = Field(..., ge=0, le=10)
     ring_control_score: float = Field(..., ge=0, le=10)
     defense_score: float = Field(..., ge=0, le=10)
@@ -52,6 +54,7 @@ class RoundData(BaseModel):
 
 class RoundResponse(BaseModel):
     """Response after logging a round."""
+
     status: str
     id: str
     danger_score: float
@@ -60,6 +63,7 @@ class RoundResponse(BaseModel):
 
 class DashboardStats(BaseModel):
     """Dashboard statistics response."""
+
     averages: Dict[str, float]
     most_recent_round_date: Optional[str]
     next_game_plan: Dict[str, Optional[str]]
@@ -68,6 +72,7 @@ class DashboardStats(BaseModel):
 
 class RoundHistory(BaseModel):
     """Individual round in history."""
+
     id: str
     date: Optional[str]
     pressure_score: float
@@ -80,6 +85,7 @@ class RoundHistory(BaseModel):
 
 class RoundHistoryResponse(BaseModel):
     """Round history response."""
+
     rounds: List[Dict[str, Any]]
     total: int
 
@@ -87,9 +93,9 @@ class RoundHistoryResponse(BaseModel):
 # Helper functions
 def calculate_danger(round_data: Dict[str, Any]) -> float:
     """Calculate danger score from round data."""
-    clean = round_data.get('clean_shots_taken', 0) / 5.0
-    defense = (10 - round_data.get('defense_score', 5)) / 10.0
-    control = (10 - round_data.get('ring_control_score', 5)) / 10.0
+    clean = round_data.get("clean_shots_taken", 0) / 5.0
+    defense = (10 - round_data.get("defense_score", 5)) / 10.0
+    control = (10 - round_data.get("ring_control_score", 5)) / 10.0
     score = (0.5 * clean) + (0.3 * defense) + (0.2 * control)
     return max(0.0, min(score, 1.0))
 
@@ -97,28 +103,32 @@ def calculate_danger(round_data: Dict[str, Any]) -> float:
 def get_strategy(danger_score: float) -> tuple[str, str]:
     """Get boxing strategy based on danger score."""
     if danger_score >= 0.7:
-        return "DEFENSE_FIRST", "High guard, active feet. Max 2-punch combos. Pump the jab, angle off. Do not trade."
+        return (
+            "DEFENSE_FIRST",
+            "High guard, active feet. Max 2-punch combos. Pump the jab, angle off. Do not trade.",
+        )
     elif danger_score >= 0.4:
-        return "RING_CUTTING", "Smart pressure. Cut exits, feint to draw counters. No ego wars. Control space."
+        return (
+            "RING_CUTTING",
+            "Smart pressure. Cut exits, feint to draw counters. No ego wars. Control space.",
+        )
     else:
-        return "PRESSURE_BODY", "Walk him down. Invest in the body and arms. Bully, clinch, drown him."
+        return (
+            "PRESSURE_BODY",
+            "Walk him down. Invest in the body and arms. Bully, clinch, drown him.",
+        )
 
 
 # API Routes
 @app.get("/")
 async def root():
     """Root endpoint with API information."""
-    return {
-        "message": "SAMMO Fight IQ API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+    return {"message": "SAMMO Fight IQ API", "version": "1.0.0", "docs": "/docs"}
 
 
 @app.post("/api/log_round", response_model=RoundResponse)
 async def log_round(
-    round_data: RoundData,
-    current_user: UserInDB = Depends(get_current_user)
+    round_data: RoundData, current_user: UserInDB = Depends(get_current_user)
 ):
     """
     Log a new boxing round with user-specific data.
@@ -139,12 +149,12 @@ async def log_round(
     # Prepare document with user association
     round_doc = {
         **round_data.dict(),
-        'user_id': current_user.id,
-        'username': current_user.username,
-        'danger_score': danger_score,
-        'strategy_title': strategy_title,
-        'strategy_text': strategy_text,
-        'date': firestore.SERVER_TIMESTAMP
+        "user_id": current_user.id,
+        "username": current_user.username,
+        "danger_score": danger_score,
+        "strategy_title": strategy_title,
+        "strategy_text": strategy_text,
+        "date": firestore.SERVER_TIMESTAMP,
     }
 
     # Store in Firestore
@@ -154,17 +164,12 @@ async def log_round(
         status="success",
         id=doc_ref.id,
         danger_score=danger_score,
-        strategy={
-            "title": strategy_title,
-            "text": strategy_text
-        }
+        strategy={"title": strategy_title, "text": strategy_text},
     )
 
 
 @app.get("/api/dashboard_stats", response_model=DashboardStats)
-async def get_dashboard_stats(
-    current_user: UserInDB = Depends(get_current_user)
-):
+async def get_dashboard_stats(current_user: UserInDB = Depends(get_current_user)):
     """
     Get aggregated statistics for the authenticated user.
 
@@ -177,18 +182,14 @@ async def get_dashboard_stats(
         Dashboard statistics including averages and game plan
     """
     # Query only the current user's rounds
-    docs = list(
-        _rounds_collection
-        .where('user_id', '==', current_user.id)
-        .stream()
-    )
+    docs = list(_rounds_collection.where("user_id", "==", current_user.id).stream())
 
     count = len(docs)
     totals = {
-        'pressure_score': 0.0,
-        'ring_control_score': 0.0,
-        'defense_score': 0.0,
-        'clean_shots_taken': 0.0
+        "pressure_score": 0.0,
+        "ring_control_score": 0.0,
+        "defense_score": 0.0,
+        "clean_shots_taken": 0.0,
     }
     most_recent = None
     most_recent_date = None
@@ -201,7 +202,7 @@ async def get_dashboard_stats(
             except Exception:
                 totals[key] += 0.0
 
-        date_val = data.get('date')
+        date_val = data.get("date")
         if date_val is not None:
             if most_recent_date is None or date_val > most_recent_date:
                 most_recent_date = date_val
@@ -220,16 +221,17 @@ async def get_dashboard_stats(
 
     return DashboardStats(
         averages=averages,
-        most_recent_round_date=most_recent_date.isoformat() if most_recent_date else None,
+        most_recent_round_date=(
+            most_recent_date.isoformat() if most_recent_date else None
+        ),
         next_game_plan=next_game_plan,
-        total_rounds=count
+        total_rounds=count,
     )
 
 
 @app.get("/api/rounds_history", response_model=RoundHistoryResponse)
 async def get_rounds_history(
-    limit: int = 100,
-    current_user: UserInDB = Depends(get_current_user)
+    limit: int = 100, current_user: UserInDB = Depends(get_current_user)
 ):
     """
     Get round history for the authenticated user.
@@ -245,42 +247,35 @@ async def get_rounds_history(
     """
     # Query only the current user's rounds
     docs = list(
-        _rounds_collection
-        .where('user_id', '==', current_user.id)
-        .limit(limit)
-        .stream()
+        _rounds_collection.where("user_id", "==", current_user.id).limit(limit).stream()
     )
 
     rounds = []
     for d in docs:
         data = d.to_dict() or {}
-        data['id'] = d.id
+        data["id"] = d.id
 
         # Convert Firestore timestamp to ISO string
-        date_val = data.get('date')
+        date_val = data.get("date")
         if date_val:
             try:
-                data['date'] = date_val.isoformat()
+                data["date"] = date_val.isoformat()
             except Exception:
-                data['date'] = str(date_val)
+                data["date"] = str(date_val)
         else:
-            data['date'] = None
+            data["date"] = None
 
         rounds.append(data)
 
     # Sort by date descending
-    rounds.sort(key=lambda x: x.get('date') or '', reverse=True)
+    rounds.sort(key=lambda x: x.get("date") or "", reverse=True)
 
-    return RoundHistoryResponse(
-        rounds=rounds,
-        total=len(rounds)
-    )
+    return RoundHistoryResponse(rounds=rounds, total=len(rounds))
 
 
 @app.delete("/api/rounds/{round_id}")
 async def delete_round(
-    round_id: str,
-    current_user: UserInDB = Depends(get_current_user)
+    round_id: str, current_user: UserInDB = Depends(get_current_user)
 ):
     """
     Delete a specific round.
@@ -303,16 +298,15 @@ async def delete_round(
 
     if not doc.exists:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Round not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Round not found"
         )
 
     # Check if the round belongs to the current user
     round_data = doc.to_dict()
-    if round_data.get('user_id') != current_user.id:
+    if round_data.get("user_id") != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this round"
+            detail="Not authorized to delete this round",
         )
 
     # Delete the round
@@ -329,12 +323,10 @@ async def health_check():
     Returns:
         Health status
     """
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

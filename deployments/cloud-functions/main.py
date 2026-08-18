@@ -8,43 +8,66 @@ Routes:
 
 All responses include CORS headers.
 """
+
 from typing import Any, Dict, List, Optional, Tuple
-import os
 from datetime import datetime
 
 import functions_framework
-from flask import jsonify, make_response
+from flask import jsonify
 from google.cloud import firestore
 
-# Initialize Firestore client globally
-_firestore_client = firestore.Client()
-_rounds_collection = _firestore_client.collection('rounds')
+# Initialize Firestore lazily. Importing the module must remain safe in CI and
+# local tooling where Application Default Credentials are intentionally absent.
+_firestore_client = None
+_rounds_collection = None
+
+
+def _get_rounds_collection():
+    global _firestore_client, _rounds_collection
+
+    if _rounds_collection is None:
+        try:
+            _firestore_client = firestore.Client()
+            _rounds_collection = _firestore_client.collection("rounds")
+        except Exception:
+            return None
+
+    return _rounds_collection
 
 
 def _cors_headers() -> Dict[str, str]:
     return {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
     }
 
 
 def calculate_danger(round_data):
     # 0.0 to 1.0 scale
-    clean = round_data.get('clean_shots_taken', 0) / 5.0
-    defense = (10 - round_data.get('defense_score', 5)) / 10.0
-    control = (10 - round_data.get('ring_control_score', 5)) / 10.0
+    clean = round_data.get("clean_shots_taken", 0) / 5.0
+    defense = (10 - round_data.get("defense_score", 5)) / 10.0
+    control = (10 - round_data.get("ring_control_score", 5)) / 10.0
     score = (0.5 * clean) + (0.3 * defense) + (0.2 * control)
     return max(0.0, min(score, 1.0))
 
 
 def get_strategy(danger_score):
     if danger_score >= 0.7:
-        return "DEFENSE_FIRST", "High guard, active feet. Max 2-punch combos. Pump the jab, angle off. Do not trade."
+        return (
+            "DEFENSE_FIRST",
+            "High guard, active feet. Max 2-punch combos. Pump the jab, angle off. Do not trade.",
+        )
     elif danger_score >= 0.4:
-        return "RING_CUTTING", "Smart pressure. Cut exits, feint to draw counters. No ego wars. Control space."
+        return (
+            "RING_CUTTING",
+            "Smart pressure. Cut exits, feint to draw counters. No ego wars. Control space.",
+        )
     else:
-        return "PRESSURE_BODY", "Walk him down. Invest in the body and arms. Bully, clinch, drown him."
+        return (
+            "PRESSURE_BODY",
+            "Walk him down. Invest in the body and arms. Bully, clinch, drown him.",
+        )
 
 
 def _to_iso(ts) -> Optional[str]:
@@ -63,23 +86,34 @@ def _to_iso(ts) -> Optional[str]:
 def _handle_log_round(request) -> Tuple[Any, int, Dict[str, str]]:
     payload = request.get_json(silent=True)
     if not payload:
-        body = {'status': 'error', 'message': 'Invalid or missing JSON payload'}
+        body = {"status": "error", "message": "Invalid or missing JSON payload"}
         headers = _cors_headers()
         return jsonify(body), 400, headers
 
-    # Add server timestamp
-    payload['date'] = firestore.SERVER_TIMESTAMP
+    rounds_collection = _get_rounds_collection()
+    if rounds_collection is None:
+        body = {"status": "error", "message": "Firestore is unavailable"}
+        return jsonify(body), 503, _cors_headers()
 
-    doc_ref, _ = _rounds_collection.add(payload)
-    body = {'status': 'success', 'id': doc_ref.id}
+    # Add server timestamp
+    payload["date"] = firestore.SERVER_TIMESTAMP
+
+    doc_ref, _ = rounds_collection.add(payload)
+    body = {"status": "success", "id": doc_ref.id}
     headers = _cors_headers()
     return jsonify(body), 200, headers
 
 
 def _handle_dashboard_stats(request) -> Tuple[Any, int, Dict[str, str]]:
-    docs = list(_rounds_collection.stream())
+    rounds_collection = _get_rounds_collection()
+    docs = list(rounds_collection.stream()) if rounds_collection is not None else []
     count = 0
-    totals = {'pressure_score': 0.0, 'ring_control_score': 0.0, 'defense_score': 0.0, 'clean_shots_taken': 0.0}
+    totals = {
+        "pressure_score": 0.0,
+        "ring_control_score": 0.0,
+        "defense_score": 0.0,
+        "clean_shots_taken": 0.0,
+    }
     most_recent = None
     most_recent_date = None
 
@@ -92,7 +126,7 @@ def _handle_dashboard_stats(request) -> Tuple[Any, int, Dict[str, str]]:
             except Exception:
                 totals[key] += 0.0
 
-        date_val = data.get('date')
+        date_val = data.get("date")
         if date_val is not None:
             if most_recent_date is None or date_val > most_recent_date:
                 most_recent_date = date_val
@@ -109,53 +143,53 @@ def _handle_dashboard_stats(request) -> Tuple[Any, int, Dict[str, str]]:
         next_game_plan = get_strategy(danger_score)
 
     body = {
-        'averages': averages,
-        'most_recent_round_date': _to_iso(most_recent_date) if most_recent_date is not None else None,
-        'next_game_plan': {
-            'title': next_game_plan[0],
-            'text': next_game_plan[1]
-        }
+        "averages": averages,
+        "most_recent_round_date": (
+            _to_iso(most_recent_date) if most_recent_date is not None else None
+        ),
+        "next_game_plan": {"title": next_game_plan[0], "text": next_game_plan[1]},
     }
     headers = _cors_headers()
     return jsonify(body), 200, headers
 
 
 def _handle_rounds_history(request) -> Tuple[Any, int, Dict[str, str]]:
-    docs = list(_rounds_collection.stream())
+    rounds_collection = _get_rounds_collection()
+    docs = list(rounds_collection.stream()) if rounds_collection is not None else []
     rounds: List[Dict[str, Any]] = []
     for d in docs:
         data = d.to_dict() or {}
-        data['id'] = d.id
-        date_val = data.get('date')
-        data['date'] = _to_iso(date_val)
+        data["id"] = d.id
+        date_val = data.get("date")
+        data["date"] = _to_iso(date_val)
         rounds.append(data)
 
     # Sort by date desc; items with None date go to the end
     def _date_key(item):
-        return item.get('date') or ''
+        return item.get("date") or ""
 
     rounds.sort(key=_date_key, reverse=True)
 
     headers = _cors_headers()
-    return jsonify({'rounds': rounds}), 200, headers
+    return jsonify({"rounds": rounds}), 200, headers
 
 
 @functions_framework.http
 def sammo(request):
     # Handle CORS preflight
-    if request.method == 'OPTIONS':
-        return ('', 204, _cors_headers())
+    if request.method == "OPTIONS":
+        return ("", 204, _cors_headers())
 
-    path = request.path or request.environ.get('PATH_INFO', '/')
+    path = request.path or request.environ.get("PATH_INFO", "/")
     # Normalize path
-    path = path.rstrip('/')
+    path = path.rstrip("/")
 
-    if path.endswith('/log_round') and request.method == 'POST':
+    if path.endswith("/log_round") and request.method == "POST":
         return _handle_log_round(request)
-    elif path.endswith('/dashboard_stats') and request.method == 'GET':
+    elif path.endswith("/dashboard_stats") and request.method == "GET":
         return _handle_dashboard_stats(request)
-    elif path.endswith('/rounds_history') and request.method == 'GET':
+    elif path.endswith("/rounds_history") and request.method == "GET":
         return _handle_rounds_history(request)
     else:
         headers = _cors_headers()
-        return jsonify({'status': 'error', 'message': 'Not Found'}), 404, headers
+        return jsonify({"status": "error", "message": "Not Found"}), 404, headers

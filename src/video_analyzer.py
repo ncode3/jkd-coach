@@ -4,6 +4,7 @@ Video Analysis Module for JKD Coach
 Uses MediaPipe Pose to extract boxing metrics from sparring videos.
 Based on logic from notebooks/02_video_processing.ipynb
 """
+
 from typing import Dict, Any
 import cv2
 import mediapipe as mp
@@ -26,7 +27,7 @@ class VideoAnalyzer:
 
     def __del__(self):
         """Clean up MediaPipe resources."""
-        if hasattr(self, 'pose'):
+        if hasattr(self, "pose"):
             self.pose.close()
 
     def _extract_frame_metrics(self, landmarks) -> Dict[str, float]:
@@ -141,8 +142,10 @@ class VideoAnalyzer:
                 head_y_values.append(metrics["head_y"])
 
                 # Check if guard is down
-                if (metrics["left_guard_height"] > GUARD_DOWN_THRESHOLD or
-                    metrics["right_guard_height"] > GUARD_DOWN_THRESHOLD):
+                if (
+                    metrics["left_guard_height"] > GUARD_DOWN_THRESHOLD
+                    or metrics["right_guard_height"] > GUARD_DOWN_THRESHOLD
+                ):
                     guard_down_frames += 1
 
         cap.release()
@@ -150,7 +153,11 @@ class VideoAnalyzer:
         # Calculate aggregated metrics
         total_frames = frame_idx
         pose_coverage = pose_detected_frames / total_frames if total_frames > 0 else 0.0
-        guard_down_ratio = guard_down_frames / pose_detected_frames if pose_detected_frames > 0 else 0.0
+        guard_down_ratio = (
+            guard_down_frames / pose_detected_frames
+            if pose_detected_frames > 0
+            else 0.0
+        )
 
         # Averages (only over frames where pose was detected)
         if pose_detected_frames > 0:
@@ -158,17 +165,18 @@ class VideoAnalyzer:
             avg_right_guard = right_guard_sum / pose_detected_frames
             avg_hip_rotation = hip_rotation_sum / pose_detected_frames
             avg_stance_width = stance_width_sum / pose_detected_frames
-            avg_head_y = head_y_sum / pose_detected_frames
+            head_y_sum / pose_detected_frames
 
             # Head movement score: standard deviation of head Y position
             # Higher = more head movement (good for defense)
-            head_movement_score = float(np.std(head_y_values)) if len(head_y_values) > 1 else 0.0
+            head_movement_score = (
+                float(np.std(head_y_values)) if len(head_y_values) > 1 else 0.0
+            )
         else:
             avg_left_guard = 0.0
             avg_right_guard = 0.0
             avg_hip_rotation = 0.0
             avg_stance_width = 0.0
-            avg_head_y = 0.0
             head_movement_score = 0.0
 
         # Convert hip rotation from normalized distance to approximate degrees

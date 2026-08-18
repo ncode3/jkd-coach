@@ -3,25 +3,18 @@ Authentication routes for user registration and login.
 
 Provides endpoints for user management and JWT token generation.
 """
+
 from datetime import timedelta
-from typing import Dict, Any
+from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials
 
-from .models import (
-    UserCreate,
-    UserLogin,
-    UserResponse,
-    Token,
-    UserInDB
-)
+from .models import UserCreate, UserLogin, UserResponse, Token, UserInDB
 from .jwt_handler import (
     verify_password,
     create_access_token,
-    create_refresh_token,
     decode_token,
-    ACCESS_TOKEN_EXPIRE_MINUTES
+    ACCESS_TOKEN_EXPIRE_MINUTES,
 )
 from .user_store import UserStore
 from .dependencies import get_user_store, get_current_user, get_current_active_user
@@ -29,10 +22,11 @@ from .dependencies import get_user_store, get_current_user, get_current_active_u
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
 async def register(
-    user_data: UserCreate,
-    user_store: UserStore = Depends(get_user_store)
+    user_data: UserCreate, user_store: UserStore = Depends(get_user_store)
 ) -> UserResponse:
     """
     Register a new user.
@@ -59,24 +53,20 @@ async def register(
             full_name=user.full_name,
             created_at=user.created_at,
             is_active=user.is_active,
-            is_verified=user.is_verified
+            is_verified=user.is_verified,
         )
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating user: {str(e)}"
+            detail=f"Error creating user: {str(e)}",
         )
 
 
 @router.post("/login", response_model=Token)
 async def login(
-    credentials: UserLogin,
-    user_store: UserStore = Depends(get_user_store)
+    credentials: UserLogin, user_store: UserStore = Depends(get_user_store)
 ) -> Token:
     """
     Login and get access token.
@@ -114,27 +104,26 @@ async def login(
     # Check if user is active
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive"
+            status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive"
         )
 
     # Create access token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.id, "username": user.username},
-        expires_delta=access_token_expires
+        expires_delta=access_token_expires,
     )
 
     return Token(
         access_token=access_token,
         token_type="bearer",
-        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60  # Convert to seconds
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert to seconds
     )
 
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
-    current_user: UserInDB = Depends(get_current_active_user)
+    current_user: UserInDB = Depends(get_current_active_user),
 ) -> UserResponse:
     """
     Get current authenticated user information.
@@ -154,14 +143,13 @@ async def get_current_user_info(
         full_name=current_user.full_name,
         created_at=current_user.created_at,
         is_active=current_user.is_active,
-        is_verified=current_user.is_verified
+        is_verified=current_user.is_verified,
     )
 
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
-    refresh_token_str: str,
-    user_store: UserStore = Depends(get_user_store)
+    refresh_token_str: str, user_store: UserStore = Depends(get_user_store)
 ) -> Token:
     """
     Refresh access token using refresh token.
@@ -200,13 +188,13 @@ async def refresh_token(
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.id, "username": user.username},
-        expires_delta=access_token_expires
+        expires_delta=access_token_expires,
     )
 
     return Token(
         access_token=access_token,
         token_type="bearer",
-        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
 
@@ -214,7 +202,7 @@ async def refresh_token(
 async def verify_user_email(
     user_id: str,
     user_store: UserStore = Depends(get_user_store),
-    current_user: UserInDB = Depends(get_current_user)
+    current_user: UserInDB = Depends(get_current_user),
 ) -> Dict[str, str]:
     """
     Verify user email (admin or self only).
@@ -235,15 +223,14 @@ async def verify_user_email(
     if current_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to verify this user"
+            detail="Not authorized to verify this user",
         )
 
     success = user_store.update_user_verified(user_id, True)
 
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
     return {"message": "User verified successfully"}
@@ -253,7 +240,7 @@ async def verify_user_email(
 async def deactivate_user_account(
     user_id: str,
     user_store: UserStore = Depends(get_user_store),
-    current_user: UserInDB = Depends(get_current_user)
+    current_user: UserInDB = Depends(get_current_user),
 ) -> Dict[str, str]:
     """
     Deactivate user account (admin or self only).
@@ -273,15 +260,14 @@ async def deactivate_user_account(
     if current_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to deactivate this user"
+            detail="Not authorized to deactivate this user",
         )
 
     success = user_store.deactivate_user(user_id)
 
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
     return {"message": "User deactivated successfully"}

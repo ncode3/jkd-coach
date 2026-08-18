@@ -4,6 +4,7 @@ from typing import Dict, Any
 
 import pandas as pd
 
+
 @dataclass
 class RoundVideoStats:
     round_id: str
@@ -17,6 +18,7 @@ class RoundVideoStats:
     avg_stance_width: float
     avg_head_y: float
 
+
 def video_form_and_danger(stats: Dict[str, Any]) -> Dict[str, Any]:
     """
     Pure function used both in the notebook and later in the API.
@@ -25,7 +27,7 @@ def video_form_and_danger(stats: Dict[str, Any]) -> Dict[str, Any]:
     Output: same dict plus video_danger_score, video_form_score, video_focus_next_round.
     """
     guard_down = stats.get("guard_down_ratio", 0.0)
-    pose_cov   = stats.get("pose_coverage", 0.0)
+    pose_cov = stats.get("pose_coverage", 0.0)
 
     # Danger: higher if guard is down and tracking coverage is low
     danger = 0.6 * guard_down + 0.4 * (1.0 - pose_cov)
@@ -33,7 +35,7 @@ def video_form_and_danger(stats: Dict[str, Any]) -> Dict[str, Any]:
 
     # Form score: start at 10, subtract penalties
     form = 10.0
-    form -= guard_down * 5.0        # big penalty for leaky guard
+    form -= guard_down * 5.0  # big penalty for leaky guard
     form -= (1.0 - pose_cov) * 2.0  # smaller penalty for low coverage
     form = max(0.0, min(10.0, form))
 
@@ -49,6 +51,7 @@ def video_form_and_danger(stats: Dict[str, Any]) -> Dict[str, Any]:
     out["video_form_score"] = float(form)
     out["video_focus_next_round"] = focus
     return out
+
 
 def load_rounds_from_csv(csv_path: str) -> pd.DataFrame:
     """
