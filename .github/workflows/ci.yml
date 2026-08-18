@@ -48,7 +48,9 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') && secrets.GCP_CREDENTIALS != ''
+    # Secrets are unavailable in job-level conditions. Restrict deployment to
+    # version tags here; the authentication step will validate the credential.
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v7
       - name: Authenticate to Google Cloud
