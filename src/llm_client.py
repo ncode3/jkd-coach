@@ -3,12 +3,14 @@ from typing import List, Dict
 import requests
 import os
 
+
 @dataclass
 class LLMConfig:
     base_url: str
     model: str
     timeout: int = 60
     temperature: float = 0.3
+
 
 class LocalLLMClient:
     """OpenAI-compatible client for local LLMs."""
@@ -25,7 +27,9 @@ class LocalLLMClient:
         }
 
         try:
-            resp = requests.post(self.config.base_url, json=payload, timeout=self.config.timeout)
+            resp = requests.post(
+                self.config.base_url, json=payload, timeout=self.config.timeout
+            )
             resp.raise_for_status()
             data = resp.json()
 
@@ -38,8 +42,11 @@ class LocalLLMClient:
         except requests.exceptions.RequestException as e:
             return f"[LLM Error: {str(e)}]"
 
+
 def get_llm_config() -> LLMConfig:
     return LLMConfig(
-        base_url=os.getenv("LLM_BASE_URL", "http://localhost:11434/v1/chat/completions"),
+        base_url=os.getenv(
+            "LLM_BASE_URL", "http://localhost:11434/v1/chat/completions"
+        ),
         model=os.getenv("LLM_MODEL", "mistral:7b-instruct"),
     )

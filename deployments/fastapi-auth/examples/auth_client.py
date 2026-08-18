@@ -9,7 +9,7 @@ Demonstrates how to:
 
 Run: python examples/auth_client.py
 """
-import sys
+
 import requests
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -29,11 +29,7 @@ class SammoClient:
         self.access_token: Optional[str] = None
 
     def register(
-        self,
-        username: str,
-        email: str,
-        password: str,
-        full_name: Optional[str] = None
+        self, username: str, email: str, password: str, full_name: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Register a new user.
@@ -54,7 +50,7 @@ class SammoClient:
             "username": username,
             "email": email,
             "password": password,
-            "full_name": full_name
+            "full_name": full_name,
         }
 
         response = requests.post(f"{self.base_url}/auth/register", json=data)
@@ -76,10 +72,7 @@ class SammoClient:
         Raises:
             requests.HTTPError: If login fails
         """
-        data = {
-            "username": username,
-            "password": password
-        }
+        data = {"username": username, "password": password}
 
         response = requests.post(f"{self.base_url}/auth/login", json=data)
         response.raise_for_status()
@@ -96,7 +89,7 @@ class SammoClient:
 
         return {
             "Authorization": f"Bearer {self.access_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     def get_profile(self) -> Dict[str, Any]:
@@ -109,10 +102,7 @@ class SammoClient:
         Raises:
             requests.HTTPError: If request fails
         """
-        response = requests.get(
-            f"{self.base_url}/auth/me",
-            headers=self._get_headers()
-        )
+        response = requests.get(f"{self.base_url}/auth/me", headers=self._get_headers())
         response.raise_for_status()
 
         return response.json()
@@ -123,7 +113,7 @@ class SammoClient:
         ring_control_score: float,
         defense_score: float,
         clean_shots_taken: int,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Log a boxing round.
@@ -146,13 +136,11 @@ class SammoClient:
             "ring_control_score": ring_control_score,
             "defense_score": defense_score,
             "clean_shots_taken": clean_shots_taken,
-            "notes": notes
+            "notes": notes,
         }
 
         response = requests.post(
-            f"{self.base_url}/api/log_round",
-            json=data,
-            headers=self._get_headers()
+            f"{self.base_url}/api/log_round", json=data, headers=self._get_headers()
         )
         response.raise_for_status()
 
@@ -169,8 +157,7 @@ class SammoClient:
             requests.HTTPError: If request fails
         """
         response = requests.get(
-            f"{self.base_url}/api/dashboard_stats",
-            headers=self._get_headers()
+            f"{self.base_url}/api/dashboard_stats", headers=self._get_headers()
         )
         response.raise_for_status()
 
@@ -191,7 +178,7 @@ class SammoClient:
         """
         response = requests.get(
             f"{self.base_url}/api/rounds_history?limit={limit}",
-            headers=self._get_headers()
+            headers=self._get_headers(),
         )
         response.raise_for_status()
 
@@ -211,8 +198,7 @@ class SammoClient:
             requests.HTTPError: If request fails
         """
         response = requests.delete(
-            f"{self.base_url}/api/rounds/{round_id}",
-            headers=self._get_headers()
+            f"{self.base_url}/api/rounds/{round_id}", headers=self._get_headers()
         )
         response.raise_for_status()
 
@@ -235,17 +221,14 @@ def main():
 
         print("1️⃣  Registering new user...")
         user = client.register(
-            username=username,
-            email=email,
-            password=password,
-            full_name="Demo Fighter"
+            username=username, email=email, password=password, full_name="Demo Fighter"
         )
         print(f"   ✅ Registered: {user['username']} ({user['email']})")
         print(f"   User ID: {user['id']}\n")
 
         print("2️⃣  Logging in...")
         token_data = client.login(username, password)
-        print(f"   ✅ Logged in successfully")
+        print("   ✅ Logged in successfully")
         print(f"   Token expires in: {token_data['expires_in']} seconds\n")
 
         print("3️⃣  Getting profile...")
@@ -260,7 +243,7 @@ def main():
             ring_control_score=7.5,
             defense_score=6.0,
             clean_shots_taken=2,
-            notes="Great sparring session, felt strong"
+            notes="Great sparring session, felt strong",
         )
         print(f"   ✅ Round logged (ID: {round1['id']})")
         print(f"   Danger Score: {round1['danger_score']:.2f}")
@@ -273,7 +256,7 @@ def main():
             ring_control_score=5.5,
             defense_score=4.0,
             clean_shots_taken=5,
-            notes="Tough round, dropped guard too much"
+            notes="Tough round, dropped guard too much",
         )
         print(f"   ✅ Round logged (ID: {round2['id']})")
         print(f"   Danger Score: {round2['danger_score']:.2f}")
@@ -290,13 +273,15 @@ def main():
         print("7️⃣  Getting round history...")
         history = client.get_rounds_history(limit=10)
         print(f"   ✅ Total Rounds: {history['total']}")
-        for i, round_data in enumerate(history['rounds'], 1):
-            print(f"   Round {i}: Score {round_data.get('defense_score', 0):.1f}, "
-                  f"Danger {round_data.get('danger_score', 0):.2f}")
+        for i, round_data in enumerate(history["rounds"], 1):
+            print(
+                f"   Round {i}: Score {round_data.get('defense_score', 0):.1f}, "
+                f"Danger {round_data.get('danger_score', 0):.2f}"
+            )
         print()
 
         print("8️⃣  Deleting a round...")
-        delete_result = client.delete_round(round1['id'])
+        delete_result = client.delete_round(round1["id"])
         print(f"   ✅ {delete_result['message']}\n")
 
         print("9️⃣  Checking updated stats...")
@@ -305,12 +290,12 @@ def main():
         print()
 
         print("✅ Demo completed successfully!")
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("Next steps:")
         print("- Explore the API docs at http://localhost:8000/docs")
         print("- Try the interactive Swagger UI")
         print("- Check AUTH_SETUP.md for more details")
-        print("="*60)
+        print("=" * 60)
 
     except requests.HTTPError as e:
         print(f"\n❌ HTTP Error: {e}")
@@ -320,6 +305,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 

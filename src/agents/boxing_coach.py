@@ -26,6 +26,7 @@ Response format:
 
 You're building a fighter who can defend themselves safely."""
 
+
 class BoxingCoach(BaseCoach):
     agent_id = "boxing"
 

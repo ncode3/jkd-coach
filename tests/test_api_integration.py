@@ -6,11 +6,11 @@ These tests require the API server to be running.
 Run with: pytest tests/test_api_integration.py -v
 or: python tests/test_api_integration.py
 """
+
 import pytest
 import requests
 from datetime import datetime
 from typing import Optional
-
 
 BASE_URL = "http://localhost:8000"
 
@@ -42,7 +42,7 @@ class TestAuthenticationFlow:
             "username": self.username,
             "email": self.email,
             "password": self.password,
-            "full_name": self.full_name
+            "full_name": self.full_name,
         }
 
         response = requests.post(f"{BASE_URL}/auth/register", json=payload)
@@ -61,7 +61,7 @@ class TestAuthenticationFlow:
         payload = {
             "username": self.username,
             "email": "different@example.com",
-            "password": self.password
+            "password": self.password,
         }
 
         response = requests.post(f"{BASE_URL}/auth/register", json=payload)
@@ -71,10 +71,7 @@ class TestAuthenticationFlow:
 
     def test_04_login(self):
         """Test user login."""
-        payload = {
-            "username": self.username,
-            "password": self.password
-        }
+        payload = {"username": self.username, "password": self.password}
 
         response = requests.post(f"{BASE_URL}/auth/login", json=payload)
 
@@ -89,10 +86,7 @@ class TestAuthenticationFlow:
 
     def test_05_login_wrong_password(self):
         """Test login with wrong password."""
-        payload = {
-            "username": self.username,
-            "password": "WrongPassword123!"
-        }
+        payload = {"username": self.username, "password": "WrongPassword123!"}
 
         response = requests.post(f"{BASE_URL}/auth/login", json=payload)
 
@@ -141,14 +135,11 @@ class TestBoxingRoundsAPI:
             "username": self.username,
             "email": self.email,
             "password": self.password,
-            "full_name": "Test Boxer"
+            "full_name": "Test Boxer",
         }
         requests.post(f"{BASE_URL}/auth/register", json=register_payload)
 
-        login_payload = {
-            "username": self.username,
-            "password": self.password
-        }
+        login_payload = {"username": self.username, "password": self.password}
         response = requests.post(f"{BASE_URL}/auth/login", json=login_payload)
         self.access_token = response.json()["access_token"]
         self.headers = {"Authorization": f"Bearer {self.access_token}"}
@@ -161,13 +152,11 @@ class TestBoxingRoundsAPI:
             "ring_control_score": 7.5,
             "defense_score": 6.0,
             "clean_shots_taken": 2,
-            "notes": "Great sparring session"
+            "notes": "Great sparring session",
         }
 
         response = requests.post(
-            f"{BASE_URL}/api/log_round",
-            json=payload,
-            headers=self.headers
+            f"{BASE_URL}/api/log_round", json=payload, headers=self.headers
         )
 
         assert response.status_code == 200
@@ -188,7 +177,7 @@ class TestBoxingRoundsAPI:
             "pressure_score": 8.0,
             "ring_control_score": 7.5,
             "defense_score": 6.0,
-            "clean_shots_taken": 2
+            "clean_shots_taken": 2,
         }
 
         response = requests.post(f"{BASE_URL}/api/log_round", json=payload)
@@ -203,32 +192,27 @@ class TestBoxingRoundsAPI:
                 "ring_control_score": 6.5,
                 "defense_score": 5.0,
                 "clean_shots_taken": 3,
-                "notes": "Round 1"
+                "notes": "Round 1",
             },
             {
                 "pressure_score": 6.0,
                 "ring_control_score": 5.5,
                 "defense_score": 4.0,
                 "clean_shots_taken": 5,
-                "notes": "Round 2"
-            }
+                "notes": "Round 2",
+            },
         ]
 
         for round_data in rounds:
             response = requests.post(
-                f"{BASE_URL}/api/log_round",
-                json=round_data,
-                headers=self.headers
+                f"{BASE_URL}/api/log_round", json=round_data, headers=self.headers
             )
             assert response.status_code == 200
             self.round_ids.append(response.json()["id"])
 
     def test_04_get_dashboard_stats(self):
         """Test getting dashboard statistics."""
-        response = requests.get(
-            f"{BASE_URL}/api/dashboard_stats",
-            headers=self.headers
-        )
+        response = requests.get(f"{BASE_URL}/api/dashboard_stats", headers=self.headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -239,10 +223,7 @@ class TestBoxingRoundsAPI:
 
     def test_05_get_rounds_history(self):
         """Test getting rounds history."""
-        response = requests.get(
-            f"{BASE_URL}/api/rounds_history",
-            headers=self.headers
-        )
+        response = requests.get(f"{BASE_URL}/api/rounds_history", headers=self.headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -259,8 +240,7 @@ class TestBoxingRoundsAPI:
     def test_06_get_rounds_with_limit(self):
         """Test getting rounds history with limit."""
         response = requests.get(
-            f"{BASE_URL}/api/rounds_history?limit=1",
-            headers=self.headers
+            f"{BASE_URL}/api/rounds_history?limit=1", headers=self.headers
         )
 
         assert response.status_code == 200
@@ -274,8 +254,7 @@ class TestBoxingRoundsAPI:
 
         round_id = self.round_ids[0]
         response = requests.delete(
-            f"{BASE_URL}/api/rounds/{round_id}",
-            headers=self.headers
+            f"{BASE_URL}/api/rounds/{round_id}", headers=self.headers
         )
 
         assert response.status_code == 200
@@ -286,8 +265,7 @@ class TestBoxingRoundsAPI:
         """Test deleting a nonexistent round."""
         fake_id = "nonexistent-round-id"
         response = requests.delete(
-            f"{BASE_URL}/api/rounds/{fake_id}",
-            headers=self.headers
+            f"{BASE_URL}/api/rounds/{fake_id}", headers=self.headers
         )
 
         assert response.status_code == 404
@@ -302,22 +280,18 @@ class TestBoxingRoundsAPI:
         register_payload = {
             "username": other_username,
             "email": other_email,
-            "password": "OtherPass123!"
+            "password": "OtherPass123!",
         }
         requests.post(f"{BASE_URL}/auth/register", json=register_payload)
 
-        login_payload = {
-            "username": other_username,
-            "password": "OtherPass123!"
-        }
+        login_payload = {"username": other_username, "password": "OtherPass123!"}
         response = requests.post(f"{BASE_URL}/auth/login", json=login_payload)
         other_token = response.json()["access_token"]
         other_headers = {"Authorization": f"Bearer {other_token}"}
 
         # Try to access first user's rounds
         response = requests.get(
-            f"{BASE_URL}/api/dashboard_stats",
-            headers=other_headers
+            f"{BASE_URL}/api/dashboard_stats", headers=other_headers
         )
 
         assert response.status_code == 200

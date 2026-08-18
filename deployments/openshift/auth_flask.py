@@ -4,6 +4,7 @@ Flask authentication module using JWT tokens.
 Adapts the FastAPI authentication logic for Flask applications.
 Uses the same JWT tokens and Firestore user store.
 """
+
 import os
 from functools import wraps
 from typing import Optional
@@ -27,6 +28,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 # Password Functions
 # ============================================================================
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against a hashed password."""
     return pwd_context.verify(plain_password, hashed_password)
@@ -40,6 +42,7 @@ def get_password_hash(password: str) -> str:
 # ============================================================================
 # JWT Token Functions
 # ============================================================================
+
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
@@ -88,15 +91,18 @@ def decode_token(token: str) -> Optional[dict]:
 # User Store (Firestore)
 # ============================================================================
 
+
 class UserStore:
     """User storage using Firestore."""
 
     def __init__(self):
         """Initialize Firestore client."""
         self._db = firestore.Client()
-        self._users_collection = self._db.collection('users')
+        self._users_collection = self._db.collection("users")
 
-    def create_user(self, username: str, email: str, password: str, full_name: str = None) -> dict:
+    def create_user(
+        self, username: str, email: str, password: str, full_name: str = None
+    ) -> dict:
         """
         Create a new user.
 
@@ -113,38 +119,45 @@ class UserStore:
             ValueError: If username or email already exists
         """
         # Check if username exists
-        existing = list(self._users_collection.where('username', '==', username).limit(1).get())
+        existing = list(
+            self._users_collection.where("username", "==", username).limit(1).get()
+        )
         if existing:
             raise ValueError(f"Username '{username}' already exists")
 
         # Check if email exists
-        existing = list(self._users_collection.where('email', '==', email).limit(1).get())
+        existing = list(
+            self._users_collection.where("email", "==", email).limit(1).get()
+        )
         if existing:
             raise ValueError(f"Email '{email}' already exists")
 
         # Create user document
         import uuid
+
         user_id = str(uuid.uuid4())
         user_doc = {
-            'id': user_id,
-            'username': username,
-            'email': email,
-            'full_name': full_name,
-            'hashed_password': get_password_hash(password),
-            'created_at': firestore.SERVER_TIMESTAMP,
-            'is_active': True,
-            'is_verified': False
+            "id": user_id,
+            "username": username,
+            "email": email,
+            "full_name": full_name,
+            "hashed_password": get_password_hash(password),
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "is_active": True,
+            "is_verified": False,
         }
 
         self._users_collection.document(user_id).set(user_doc)
 
         # Return created user (without password)
-        user_doc.pop('hashed_password')
+        user_doc.pop("hashed_password")
         return user_doc
 
     def get_user_by_username(self, username: str) -> Optional[dict]:
         """Get user by username."""
-        docs = list(self._users_collection.where('username', '==', username).limit(1).get())
+        docs = list(
+            self._users_collection.where("username", "==", username).limit(1).get()
+        )
         if not docs:
             return None
         return docs[0].to_dict()
@@ -169,6 +182,7 @@ except Exception as e:
 # Flask Authentication Decorators
 # ============================================================================
 
+
 def get_current_user() -> Optional[dict]:
     """
     Get current user from request Authorization header.
@@ -180,13 +194,13 @@ def get_current_user() -> Optional[dict]:
         return None
 
     # Get Authorization header
-    auth_header = request.headers.get('Authorization')
+    auth_header = request.headers.get("Authorization")
     if not auth_header:
         return None
 
     # Extract token
     parts = auth_header.split()
-    if len(parts) != 2 or parts[0].lower() != 'bearer':
+    if len(parts) != 2 or parts[0].lower() != "bearer":
         return None
 
     token = parts[1]
@@ -196,13 +210,13 @@ def get_current_user() -> Optional[dict]:
     if not payload:
         return None
 
-    user_id = payload.get('sub')
+    user_id = payload.get("sub")
     if not user_id:
         return None
 
     # Get user from database
     user = user_store.get_user_by_id(user_id)
-    if not user or not user.get('is_active', False):
+    if not user or not user.get("is_active", False):
         return None
 
     return user
@@ -219,14 +233,15 @@ def require_auth(f):
             user = get_current_user()
             return {'user': user['username']}
     """
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         user = get_current_user()
         if user is None:
-            return jsonify({
-                'status': 'error',
-                'message': 'Authentication required'
-            }), 401
+            return (
+                jsonify({"status": "error", "message": "Authentication required"}),
+                401,
+            )
 
         return f(*args, **kwargs)
 
@@ -247,6 +262,7 @@ def optional_auth(f):
                 return {'message': f'Hello {user["username"]}'}
             return {'message': 'Hello anonymous'}
     """
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Authentication is optional, just continue

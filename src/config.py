@@ -1,6 +1,7 @@
 """
 Centralized configuration for SAMMO Fight IQ.
 """
+
 from pathlib import Path
 import os
 

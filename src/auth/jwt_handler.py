@@ -3,6 +3,7 @@ JWT token generation and validation utilities.
 
 Handles JWT token creation, validation, and decoding using HS256 algorithm.
 """
+
 import os
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
@@ -50,8 +51,7 @@ def get_password_hash(password: str) -> str:
 
 
 def create_access_token(
-    data: Dict[str, Any],
-    expires_delta: Optional[timedelta] = None
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
     """
     Create a JWT access token.
@@ -77,8 +77,7 @@ def create_access_token(
 
 
 def create_refresh_token(
-    data: Dict[str, Any],
-    expires_delta: Optional[timedelta] = None
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
     """
     Create a JWT refresh token with longer expiration.
@@ -124,11 +123,7 @@ def decode_token(token: str) -> Optional[TokenData]:
 
         exp = datetime.fromtimestamp(exp_timestamp)
 
-        return TokenData(
-            user_id=user_id,
-            username=username,
-            exp=exp
-        )
+        return TokenData(user_id=user_id, username=username, exp=exp)
     except InvalidTokenError:
         return None
     except Exception:

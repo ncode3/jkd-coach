@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import List, Dict
+from typing import List
+
 
 class SimpleMemoryStore:
     """Ultra-simple persistent memory using JSONL."""
@@ -31,7 +32,8 @@ class SimpleMemoryStore:
                         continue
 
         filtered = [
-            rec["content"] for rec in lines
+            rec["content"]
+            for rec in lines
             if rec.get("agent_id") == agent_id and rec.get("user_id") == user_id
         ]
         return filtered[-k:]

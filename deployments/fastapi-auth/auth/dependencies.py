@@ -3,11 +3,12 @@ FastAPI authentication dependencies.
 
 Provides dependency injection for protected routes requiring authentication.
 """
+
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from .jwt_handler import decode_token, verify_token
+from .jwt_handler import decode_token
 from .user_store import UserStore
 from .models import UserInDB, TokenData
 
@@ -27,7 +28,7 @@ def get_user_store() -> UserStore:
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    user_store: UserStore = Depends(get_user_store)
+    user_store: UserStore = Depends(get_user_store),
 ) -> UserInDB:
     """
     Dependency to get current authenticated user.
@@ -65,15 +66,14 @@ async def get_current_user(
     # Check if user is active
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive"
+            status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive"
         )
 
     return user
 
 
 async def get_current_active_user(
-    current_user: UserInDB = Depends(get_current_user)
+    current_user: UserInDB = Depends(get_current_user),
 ) -> UserInDB:
     """
     Dependency to get current active user.
@@ -89,14 +89,13 @@ async def get_current_active_user(
     """
     if not current_user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user"
         )
     return current_user
 
 
 async def get_current_verified_user(
-    current_user: UserInDB = Depends(get_current_user)
+    current_user: UserInDB = Depends(get_current_user),
 ) -> UserInDB:
     """
     Dependency to get current verified user.
@@ -112,8 +111,7 @@ async def get_current_verified_user(
     """
     if not current_user.is_verified:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Email not verified"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified"
         )
     return current_user
 
@@ -122,7 +120,7 @@ def optional_authentication(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(
         HTTPBearer(auto_error=False)
     ),
-    user_store: UserStore = Depends(get_user_store)
+    user_store: UserStore = Depends(get_user_store),
 ) -> Optional[UserInDB]:
     """
     Optional authentication dependency.
