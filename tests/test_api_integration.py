@@ -7,12 +7,19 @@ Run with: pytest tests/test_api_integration.py -v
 or: python tests/test_api_integration.py
 """
 
+import os
+
 import pytest
 import requests
 from datetime import datetime
 from typing import Optional
 
 BASE_URL = "http://localhost:8000"
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("RUN_LIVE_INTEGRATION") != "1",
+    reason="requires a live API server and Firestore; set RUN_LIVE_INTEGRATION=1",
+)
 
 
 class TestAuthenticationFlow:
