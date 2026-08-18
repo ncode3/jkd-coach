@@ -3,8 +3,19 @@
 These tests call the `sammo` function directly with a Flask test request context.
 """
 
+import importlib.util
+from pathlib import Path
+
 from flask import Flask, request
-from main import sammo
+
+MODULE_PATH = (
+    Path(__file__).resolve().parents[1] / "deployments" / "cloud-functions" / "main.py"
+)
+SPEC = importlib.util.spec_from_file_location("cloud_function_main", MODULE_PATH)
+assert SPEC and SPEC.loader
+CLOUD_FUNCTION = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(CLOUD_FUNCTION)
+sammo = CLOUD_FUNCTION.sammo
 
 
 def test_dashboard_stats_endpoint_empty():
