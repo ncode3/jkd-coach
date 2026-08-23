@@ -16,7 +16,7 @@ pytest-cov
 mediapipe>=1.0.0
 opencv-python-headless>=4.8.0  # Headless version for server deployments
 numpy>=1.24.0
-pandas>=2.0.0
+pandas>=3.0.5
 scikit-learn>=1.3.0
 matplotlib>=3.11.1
 jupyterlab>=4.6.3
