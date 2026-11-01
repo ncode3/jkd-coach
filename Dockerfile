@@ -1,7 +1,7 @@
 # JKD Coach - Dockerfile
 # Production-ready container for Flask API
 
-FROM python:3.9-slim
+FROM python:3.15-slim
 
 # Set working directory
 WORKDIR /app
